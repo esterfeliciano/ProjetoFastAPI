@@ -11,7 +11,49 @@ dependencies = [
     "fastapi[standard] (>=0.139.2,<0.140.0)"
 ]
 
-
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pytest (>=9.1.1,<10.0.0)",
+    "pytest-cov (>=7.1.0,<8.0.0)",
+    "ruff (>=0.16.0,<0.17.0)",
+    "typos (>=1.48.0,<2.0.0)"
+]
+
+[tool.ruff]
+line-length = 79
+extend-exclude = ['migrations']
+
+[tool.ruff.lint]
+preview = true
+select = ['I', 'F', 'E', 'W', 'PL', 'PT']
+
+[tool.ruff.format]
+preview = true
+quote-style = 'single'
+
+[tool.pytest.ini_options]
+pythonpath = ['.']
+addopts = ['-p', 'no:warnings', '--cov=fast_zero', '--cov-context=test']
+
+[tool.poetry.requires-plugins]
+poethepoet = { version = "~0.48.0", extras = ["poetry_plugin"]}
+
+[tool.poe]
+poetry_command = "poe"
+
+[tool.poe.tasks]
+lint = { cmd = "ruff check" }
+format.sequence = [
+  { cmd = "ruff check --fix" },
+  { cmd = "ruff format" },
+]
+serve = "fastapi dev fast_zero/app.py"
+test.sequence = [
+  "lint",
+  { cmd = "pytest -s -x -vv $POE_EXTRA_ARGS" },
+  { cmd = "coverage html --show-contexts" },
+]
