@@ -4,10 +4,10 @@ from fastapi import FastAPI, HTTPException
 
 from fast_zero.schemas import (
     Message,
-    ProdutoDB,
-    ProdutoList,
-    ProdutoPublic,
-    ProdutoSchema,
+    UserDB,
+    UserList,
+    UserPublic,
+    UserSchema,
 )
 
 app = FastAPI()
@@ -21,41 +21,41 @@ def read_root():
 
 
 @app.post(
-    '/produtos/',
+    '/users/',
     status_code=HTTPStatus.CREATED,
-    response_model=ProdutoPublic,
+    response_model=UserPublic,
 )
-def create_produto(produto: ProdutoSchema):
-    produto_com_id = ProdutoDB(**produto.model_dump(), id=len(database) + 1)
-    database.append(produto_com_id)
-    return produto_com_id
+def create_user(user: UserSchema):
+    user_with_id = UserDB(**user.model_dump(), id=len(database) + 1)
+    database.append(user_with_id)
+    return user_with_id
 
 
-@app.get('/produtos/', response_model=ProdutoList)
-def read_produtos():
-    return {'produtos': database}
+@app.get('/users/', response_model=UserList)
+def read_users():
+    return {'users': database}
 
 
-@app.put('/produtos/{produto_id}', response_model=ProdutoPublic)
-def update_produto(produto_id: int, produto: ProdutoSchema):
-    if produto_id > len(database) or produto_id < 1:
+@app.put('/users/{user_id}', response_model=UserPublic)
+def update_user(user_id: int, user: UserSchema):
+    if user_id > len(database) or user_id < 1:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='Produto not found'
+            status_code=HTTPStatus.NOT_FOUND, detail='User not found'
         )
 
-    produto_com_id = ProdutoDB(**produto.model_dump(), id=produto_id)
-    database[produto_id - 1] = produto_com_id
+    user_with_id = UserDB(**user.model_dump(), id=user_id)
+    database[user_id - 1] = user_with_id
 
-    return produto_com_id
+    return user_with_id
 
 
-@app.delete('/produtos/{produto_id}', response_model=Message)
-def delete_produto(produto_id: int):
-    if produto_id > len(database) or produto_id < 1:
+@app.delete('/users/{user_id}', response_model=Message)
+def delete_user(user_id: int):
+    if user_id > len(database) or user_id < 1:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='Produto not found'
+            status_code=HTTPStatus.NOT_FOUND, detail='User not found'
         )
 
-    del database[produto_id - 1]
+    del database[user_id - 1]
 
-    return {'message': 'Produto deleted'}
+    return {'message': 'User deleted'}
