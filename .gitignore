@@ -227,4 +227,5 @@ __marimo__/
 database.db
 
 .venv
+
 .vscode
