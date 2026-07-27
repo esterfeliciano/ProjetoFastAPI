@@ -157,7 +157,7 @@ activemq-data/
 # Environments
 .env
 .envrc
-.venv
+.venv/
 env/
 venv/
 ENV/
@@ -225,7 +225,3 @@ __marimo__/
 # Generated using ignr.py - github.com/Antrikshy/ignr.py
 
 database.db
-
-.venv
-
-.vscode
