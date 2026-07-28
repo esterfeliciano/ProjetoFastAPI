@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class ProductSchema(BaseModel):
     name: str
     description: str
@@ -7,11 +8,14 @@ class ProductSchema(BaseModel):
     stock: int
     category: str
 
+
 class ProductPublic(ProductSchema):
     id: int
 
+
 class ProductList(BaseModel):
     products: list[ProductPublic]
+
 
 class ProductUpdate(BaseModel):
     name: str | None = None
