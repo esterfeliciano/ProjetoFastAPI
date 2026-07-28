@@ -1,8 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fast_zero.config.database_settings import get_session
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from fast_zero.config.database_settings import get_session
 from fast_zero.products.models import Product
 from fast_zero.products.schemas import (
     ProductList,
@@ -34,6 +33,7 @@ def create_product(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Product already exists',
         )
+
     db_product = Product(
         name=product.name,
         description=product.description,
@@ -44,6 +44,7 @@ def create_product(
     session.add(db_product)
     session.commit()
     session.refresh(db_product)
+
     return db_product
 
 
@@ -88,8 +89,10 @@ def update_product(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Product not found',
         )
+
     for key, value in product.model_dump(exclude_unset=True).items():
         setattr(db_product, key, value)
+
     session.commit()
     session.refresh(db_product)
     return db_product
@@ -109,6 +112,8 @@ def delete_product(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Product not found',
         )
+
     session.delete(db_product)
     session.commit()
+
     return {'message': 'Product deleted successfully'}
