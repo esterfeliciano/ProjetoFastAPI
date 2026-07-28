@@ -17,6 +17,10 @@ class UserList(BaseModel):
     users: list[UserPublic]
 
 
+class Message(BaseModel):
+    message: str
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str

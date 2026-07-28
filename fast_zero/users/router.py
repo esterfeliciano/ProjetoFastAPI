@@ -25,7 +25,9 @@ router = APIRouter(tags=['users'])
 
 
 @router.post(
-    '/users/', status_code=HTTPStatus.CREATED, response_model=UserPublic
+    '/users/',
+    status_code=HTTPStatus.CREATED,
+    response_model=UserPublic,
 )
 def create_user(user: UserSchema, session: Session = Depends(get_session)):
     db_user = session.scalar(
@@ -106,21 +108,33 @@ def delete_user(
     return {'message': 'User deleted'}
 
 
-@router.post('/token', response_model=Token)
+@router.post(
+    '/users/token',
+    status_code=HTTPStatus.OK,
+    response_model=Token,
+)
+@router.post(
+    '/token',
+    status_code=HTTPStatus.OK,
+    response_model=Token,
+)
 def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: Session = Depends(get_session),
 ):
     user = session.scalar(
-        select(User).where(User.email == form_data.username)
+        select(User).where(
+            (User.username == form_data.username)
+            | (User.email == form_data.username)
+        )
     )
 
     if not user or not verify_password(form_data.password, user.password):
         raise HTTPException(
             status_code=HTTPStatus.UNAUTHORIZED,
-            detail='Incorrect email or password',
+            detail='Incorrect username or password',
         )
 
-    access_token = create_access_token(data={'sub': user.email})
+    access_token = create_access_token(data={'sub': user.username})
 
     return {'access_token': access_token, 'token_type': 'bearer'}
