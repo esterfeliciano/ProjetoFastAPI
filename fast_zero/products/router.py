@@ -1,7 +1,8 @@
-from fast_zero.config.database_settings import get_session
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from fast_zero.config.database_settings import get_session
 from fast_zero.products.models import Product
 from fast_zero.products.schemas import (
     ProductList,
