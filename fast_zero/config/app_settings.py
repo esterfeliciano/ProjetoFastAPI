@@ -1,2 +1,2 @@
-# Reservado para configurações gerais da aplicação 
-# (CORS, chave JWT, etc. - usado a partir da aula 6 do curso de FastAPI do Zero)
+# Reservado para configurações gerais da aplicação
+# (CORS, chave JWT, etc. - usado a partir da aula 6)
