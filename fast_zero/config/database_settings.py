@@ -17,4 +17,4 @@ engine = create_engine(DatabaseSettings().DATABASE_URL)
 
 def get_session():
     with Session(engine) as session:
-        yield session
+        yield sessions
