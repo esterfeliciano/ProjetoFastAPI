@@ -90,21 +90,29 @@ def checkout_cart(
             detail='Cart is empty',
         )
 
-    mensagem = f"Olá! Gostaria de finalizar o meu pedido:\n\n*Cliente:* {current_user.username}\n\n"
+    mensagem = (
+        'Olá! Gostaria de finalizar o meu pedido:\n\n'
+        f'*Cliente:* {current_user.username}\n\n'
+    )
     total = 0.0
 
     for item in cart.items:
         subtotal = item.price * item.quantity
         total += subtotal
-        mensagem += f"- {item.quantity}x {item.product_name} (R$ {item.price:.2f} un) = R$ {subtotal:.2f}\n"
+        mensagem += (
+            f'- {item.quantity}x {item.product_name} '
+            f'(R$ {item.price:.2f} un) = R$ {subtotal:.2f}\n'
+        )
 
-    mensagem += f"\n*Total do Pedido: R$ {total:.2f}*"
+    mensagem += f'\n*Total do Pedido: R$ {total:.2f}*'
 
-    # Substitua pelo número de WhatsApp da loja (DDI + DDD + Número)
     numero_whatsapp = '5581999999999'
 
     texto_codificado = quote(mensagem)
-    whatsapp_url = f'https://api.whatsapp.com/send?phone={numero_whatsapp}&text={texto_codificado}'
+    whatsapp_url = (
+        f'https://api.whatsapp.com/send?'
+        f'phone={numero_whatsapp}&text={texto_codificado}'
+    )
 
     for item in cart.items:
         session.delete(item)
