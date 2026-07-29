@@ -1,7 +1,9 @@
 from datetime import datetime
 from enum import Enum
+
 from sqlalchemy import ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column
+
 from fast_zero.users.models import table_registry
 
 
