@@ -24,3 +24,11 @@ class TaskPublic(BaseModel):
 
 class TaskList(BaseModel):
     tasks: list[TaskPublic]
+
+
+class TaskFilter(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    state: TaskState | None = None
+    offset: int = 0
+    limit: int = 100

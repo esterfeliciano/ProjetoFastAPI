@@ -1,11 +1,18 @@
 from http import HTTPStatus
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fast_zero.config.database_settings import get_session
 from fast_zero.tasks.models import Task
-from fast_zero.tasks.schemas import TaskList, TaskPublic, TaskSchema, TaskUpdate
+from fast_zero.tasks.schemas import (
+    TaskFilter,
+    TaskList,
+    TaskPublic,
+    TaskSchema,
+    TaskUpdate,
+)
 from fast_zero.users.models import User
 from fast_zero.users.security import get_current_user
 
@@ -32,24 +39,22 @@ async def create_task(
 
 @router.get('/', response_model=TaskList)
 async def list_tasks(
-    user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
-    title: str | None = None,
-    description: str | None = None,
-    state: str | None = None,
-    offset: int = 0,
-    limit: int = 100,
+    user: User = Depends(get_current_user),
+    filters: TaskFilter = Depends(),
 ):
     query = select(Task).filter(Task.user_id == user.id)
 
-    if title:
-        query = query.filter(Task.title.contains(title))
-    if description:
-        query = query.filter(Task.description.contains(description))
-    if state:
-        query = query.filter(Task.state == state)
+    if filters.title:
+        query = query.filter(Task.title.contains(filters.title))
+    if filters.description:
+        query = query.filter(Task.description.contains(filters.description))
+    if filters.state:
+        query = query.filter(Task.state == filters.state)
 
-    result = await session.scalars(query.offset(offset).limit(limit))
+    result = await session.scalars(
+        query.offset(filters.offset).limit(filters.limit)
+    )
     tasks = result.all()
 
     return {'tasks': tasks}
