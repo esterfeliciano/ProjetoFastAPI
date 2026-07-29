@@ -1,11 +1,5 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
-from fast_zero.config.database_settings import get_session
 from fast_zero.backend.src.users.models import User
 from fast_zero.backend.src.users.schemas import (
     Message,
@@ -20,6 +14,11 @@ from fast_zero.backend.src.users.security import (
     get_password_hash,
     verify_password,
 )
+from fast_zero.config.database_settings import get_session
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 router = APIRouter(tags=['users'])
 

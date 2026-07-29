@@ -1,12 +1,6 @@
 from http import HTTPStatus
 from urllib.parse import quote
 
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
-from fast_zero.config.database_settings import get_session
 from fast_zero.backend.src.users.cart.models import CartItemModel, CartModel
 from fast_zero.backend.src.users.cart.schemas import (
     CartItemSchema,
@@ -15,6 +9,11 @@ from fast_zero.backend.src.users.cart.schemas import (
 )
 from fast_zero.backend.src.users.models import User
 from fast_zero.backend.src.users.security import get_current_user
+from fast_zero.config.database_settings import get_session
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 router = APIRouter(tags=['cart'])
 

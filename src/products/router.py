@@ -1,7 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
+from fast_zero.backend.src.users.models import User
+from fast_zero.backend.src.users.security import get_current_user
 from fast_zero.config.database_settings import get_session
 from fast_zero.products.models import Product
 from fast_zero.products.schemas import (
@@ -10,8 +8,9 @@ from fast_zero.products.schemas import (
     ProductSchema,
     ProductUpdate,
 )
-from fast_zero.backend.src.users.models import User
-from fast_zero.backend.src.users.security import get_current_user
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix='/products', tags=['products'])
 

@@ -1,6 +1,5 @@
-from pydantic import BaseModel
-
 from fast_zero.tasks.models import TaskState
+from pydantic import BaseModel
 
 
 class TaskSchema(BaseModel):
