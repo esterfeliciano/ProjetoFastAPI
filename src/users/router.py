@@ -6,15 +6,15 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from fast_zero.config.database_settings import get_session
-from fast_zero.users.models import User
-from fast_zero.users.schemas import (
+from fast_zero.backend.src.users.models import User
+from fast_zero.backend.src.users.schemas import (
     Message,
     Token,
     UserList,
     UserPublic,
     UserSchema,
 )
-from fast_zero.users.security import (
+from fast_zero.backend.src.users.security import (
     create_access_token,
     get_current_user,
     get_password_hash,

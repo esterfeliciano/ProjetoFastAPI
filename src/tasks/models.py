@@ -4,7 +4,7 @@ from enum import Enum
 from sqlalchemy import ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from fast_zero.users.models import table_registry
+from fast_zero.backend.src.users.models import table_registry
 
 
 class TaskState(str, Enum):

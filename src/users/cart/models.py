@@ -6,7 +6,7 @@ from sqlalchemy.orm import (
     relationship,
 )
 
-from fast_zero.users.models import (
+from fast_zero.backend.src.users.models import (
     table_registry,  # Utiliza o mesmo registry do projeto
 )
 

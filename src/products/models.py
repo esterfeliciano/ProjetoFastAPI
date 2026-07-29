@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import Mapped, mapped_column
 
-from fast_zero.users.models import table_registry
+from fast_zero.backend.src.users.models import table_registry
 
 
 @table_registry.mapped_as_dataclass

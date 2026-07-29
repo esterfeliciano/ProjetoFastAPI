@@ -10,7 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from fast_zero.config.database_settings import get_session
-from fast_zero.users.models import User
+from fast_zero.backend.src.users.models import User
 
 # Constantes provisórias, serão movidas para settings numa próxima etapa
 SECRET_KEY = 'your-very-secret-and-exclusive-key'

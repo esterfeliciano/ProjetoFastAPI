@@ -13,8 +13,8 @@ from fast_zero.tasks.schemas import (
     TaskSchema,
     TaskUpdate,
 )
-from fast_zero.users.models import User
-from fast_zero.users.security import get_current_user
+from fast_zero.backend.src.users.models import User
+from fast_zero.backend.src.users.security import get_current_user
 
 router = APIRouter(prefix='/tasks', tags=['tasks'])
 
