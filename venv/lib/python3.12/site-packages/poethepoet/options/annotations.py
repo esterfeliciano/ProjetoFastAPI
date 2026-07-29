@@ -1,0 +1,544 @@
+from __future__ import annotations
+
+import types
+import typing
+from collections.abc import Iterator, Mapping, MutableMapping, Sequence
+from typing import (
+    Annotated,
+    Any,
+    Literal,
+    Optional,
+    TypeVar,
+    Union,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
+
+T = TypeVar("T", bound=Any)
+_registered_type_hint_globals = {}
+
+
+def option_annotation(cls: T) -> T:
+    """
+    Register custom types (e.g. TypedDicts) to be usable in PoeOptions fields
+    """
+    _registered_type_hint_globals[cls.__name__] = cls
+    return cls
+
+
+def register_type_alias(name: str, type_alias: Any) -> Any:
+    """
+    Register a named type alias (e.g. a Literal) so it can be referenced
+    by name in PoeOptions field annotations.
+
+    Use this for type aliases that have no `__name__` (Literals, Unions, etc.)
+    so they can't be registered via `option_annotation`. Class-like types
+    should use `option_annotation` instead.
+
+    Recommended usage — split form (works for both cross-module and
+    same-module annotation use):
+
+        MyAlias = Literal["a", "b", "c"]
+        register_type_alias("MyAlias", MyAlias)
+
+    The inline form is also supported:
+
+        MyAlias = register_type_alias("MyAlias", Literal["a", "b", "c"])
+
+    but causes mypy to type the LHS as ``Any`` (the function-call return
+    type), which breaks any same-module use of the name as a type
+    annotation. Prefer the split form unless the alias is only used
+    cross-module.
+    """
+
+    _registered_type_hint_globals[name] = type_alias
+    return type_alias
+
+
+class Metadata:
+    __slots__ = (
+        "config_name",
+        "disinherited",
+        "examples",
+        "max_items",
+        "max_length",
+        "maximum",
+        "min_items",
+        "min_length",
+        "minimum",
+        "pattern",
+    )
+
+    def __init__(
+        self,
+        *,
+        config_name: str | None = None,
+        disinherited: bool | None = None,
+        pattern: str | None = None,
+        examples: list[Any] | None = None,
+        minimum: float | None = None,
+        maximum: float | None = None,
+        min_length: int | None = None,
+        max_length: int | None = None,
+        min_items: int | None = None,
+        max_items: int | None = None,
+    ) -> None:
+        self.config_name = config_name
+        self.disinherited = disinherited
+        self.pattern = pattern
+        self.examples = examples
+        self.minimum = minimum
+        self.maximum = maximum
+        self.min_length = min_length
+        self.max_length = max_length
+        self.min_items = min_items
+        self.max_items = max_items
+
+    @classmethod
+    def type_constraints(cls) -> dict[str, frozenset[str]]:
+        """
+        Return a mapping from constraint name to the set of JSON Schema types
+        that constraint applies to.
+
+        Constructed on demand: only schema generation reads this, and that
+        runs offline. Keeping it out of the class body avoids paying the
+        construction cost on every CLI invocation. Field-level fields
+        (config_name, disinherited, examples) are not listed — they apply to
+        any field regardless of value type.
+        """
+        return {
+            "pattern": frozenset({"string"}),
+            "minimum": frozenset({"integer", "number"}),
+            "maximum": frozenset({"integer", "number"}),
+            "min_length": frozenset({"string"}),
+            "max_length": frozenset({"string"}),
+            "min_items": frozenset({"array"}),
+            "max_items": frozenset({"array"}),
+        }
+
+
+# Annotation marker for an inherited PoeOptions field that a subclass declines
+# to accept. Applied as ``Disinherited[T]`` on a redeclaration of the field, it
+# removes the field from that subclass's config surface.
+_DisinheritedT = TypeVar("_DisinheritedT")
+Disinherited = Annotated[_DisinheritedT, Metadata(disinherited=True)]
+
+
+class TypeAnnotation:
+    """
+    This class and its descendants provide a convenient model for parsing and
+    enforcing pythonic type annotations for PoeOptions.
+    """
+
+    __slots__ = ("_annotation", "_metadata")
+
+    @classmethod
+    def get_type_hint_globals(cls):
+        return {
+            "Annotated": Annotated,
+            "Any": Any,
+            "Optional": Optional,
+            "Mapping": Mapping,
+            "MutableMapping": MutableMapping,
+            "typing.Mapping": typing.Mapping,
+            "typing.MutableMapping": typing.MutableMapping,
+            "Sequence": Sequence,
+            "typing.Sequence": typing.Sequence,
+            "Literal": Literal,
+            "Union": Union,
+            "TypeAnnotation": cls,
+            "Metadata": Metadata,
+            "Disinherited": Disinherited,
+            **_registered_type_hint_globals,
+        }
+
+    @staticmethod
+    def parse(annotation: Any):
+        origin = get_origin(annotation)
+
+        # Support Annotated[T, Metadata(...)] so metadata can be
+        # attached to the created TypeAnnotation instance.
+        metadata = None
+        if origin is Annotated:
+            args = get_args(annotation)
+            # args[0] is the underlying annotation, args[1:] are metadata
+            annotation = args[0]
+            origin = get_origin(annotation)
+            # pick first metadata object (commonly Metadata)
+            if len(args) > 1:
+                metadata = args[1]
+
+        if annotation in (str, int, float, bool):
+            return PrimitiveType(annotation, metadata)
+
+        elif annotation is dict or origin in (
+            dict,
+            Mapping,
+            MutableMapping,
+            typing.Mapping,
+            typing.MutableMapping,
+        ):
+            return DictType(annotation, metadata)
+
+        elif annotation is list or origin in (
+            list,
+            tuple,
+            Sequence,
+            typing.Sequence,
+        ):
+            return ListType(annotation, metadata)
+
+        elif origin is Literal:
+            return LiteralType(annotation, metadata)
+
+        elif origin in (types.UnionType, Union):
+            return UnionType(annotation, metadata)
+
+        elif annotation is Any:
+            return AnyType(annotation, metadata)
+
+        elif annotation in (None, type(None)):
+            return NoneType(annotation, metadata)
+
+        elif typing.is_typeddict(annotation):
+            return TypedDictType(annotation, metadata)
+
+        raise ValueError(f"Cannot parse TypeAnnotation for annotation: {annotation}")
+
+    def __init__(self, annotation: Any, metadata: Any = None):
+        self._annotation = annotation
+        self._metadata = metadata
+
+    def metadata_get(self, key: str, default: Any = None) -> Any:
+        if self._metadata is None:
+            return default
+        value = getattr(self._metadata, key, default)
+        return default if value is None else value
+
+    @property
+    def is_optional(self) -> bool:
+        return False
+
+    @property
+    def simple_type(self) -> Any:
+        return self._annotation
+
+    def validate(self, path: tuple[str | int, ...], value: Any) -> Iterator[str]:
+        raise NotImplementedError
+
+    def zero_value(self) -> Any:
+        return None
+
+    @staticmethod
+    def _format_path(path: tuple[str | int, ...]):
+        return "".join(
+            (f"[{part}]" if isinstance(part, int) else f".{part}") for part in path
+        ).strip(".")
+
+
+class DictType(TypeAnnotation):
+    __slots__ = ("_value_type",)
+
+    def __init__(self, annotation: Any, metadata: Any = None):
+        super().__init__(annotation, metadata)
+        if args := get_args(annotation):
+            assert args[0] is str
+            self._value_type = TypeAnnotation.parse(get_args(annotation)[1])
+        else:
+            self._value_type = AnyType()
+
+    def __str__(self):
+        if isinstance(self._value_type, AnyType):
+            return "dict"
+        return f"dict[str, {self._value_type}]"
+
+    @property
+    def simple_type(self) -> Any:
+        return dict
+
+    def zero_value(self) -> dict:
+        return {}
+
+    def validate(self, path: tuple[str | int, ...], value: Any) -> Iterator[str]:
+        if not isinstance(value, dict):
+            yield f"Option {self._format_path(path)!r} must be a dict"
+
+        if isinstance(self._value_type, AnyType):
+            return
+
+        # We assume dict keys can only be strings so no need to check them
+        for key, dict_value in value.items():
+            yield from self._value_type.validate((*path, key), dict_value)
+
+
+class TypedDictType(TypeAnnotation):
+    __slots__ = ("_optional_keys", "_schema")
+
+    def __init__(self, annotation: Any, metadata: Any = None):
+        super().__init__(annotation, metadata)
+        self._schema = {
+            key: TypeAnnotation.parse(type_)
+            for key, type_ in get_type_hints(annotation, include_extras=True).items()
+        }
+        self._optional_keys: frozenset[str] = getattr(
+            annotation, "__optional_keys__", frozenset()
+        )
+
+    def __str__(self):
+        return (
+            "dict("
+            + ", ".join(f"{key}: {value}" for key, value in self._schema.items())
+            + ")"
+        )
+
+    @property
+    def simple_type(self) -> Any:
+        return dict
+
+    def zero_value(self) -> dict:
+        return {
+            key: value_type.zero_value()
+            for key, value_type in self._schema.items()
+            if key not in self._optional_keys
+        }
+
+    def validate(self, path: tuple[str | int, ...], value: Any) -> Iterator[str]:
+        if not isinstance(value, dict):
+            yield f"Option {self._format_path(path)!r} must be a dict"
+
+        for key, value_type in self._schema.items():
+            if key not in value:
+                if key not in self._optional_keys:
+                    yield (
+                        f"Option {self._format_path(path)!r} "
+                        f"missing required key: {key}"
+                    )
+                continue
+            yield from value_type.validate((*path, key), value[key])
+
+        for key in set(value) - set(self._schema):
+            yield f"Option {self._format_path(path)!r} contains unexpected key: {key}"
+
+
+class ListType(TypeAnnotation):
+    __slots__ = ("_type", "_value_type")
+
+    def __init__(self, annotation: Any, metadata: Any = None):
+        super().__init__(annotation, metadata)
+        self._type = get_origin(annotation) or (tuple if annotation is tuple else list)
+        if args := get_args(annotation):
+            self._value_type = TypeAnnotation.parse(args[0])
+            if self._type is tuple:
+                assert (
+                    args[1] is ...
+                ), "ListType only accepts tuples with any length type"
+        else:
+            self._value_type = AnyType()
+
+    def __str__(self):
+        # Even if the type is tuple, only use list for error reporting etc
+        if isinstance(self._value_type, AnyType):
+            return "list"
+        return f"list[{self._value_type}]"
+
+    @property
+    def simple_type(self) -> Any:
+        return dict
+
+    def zero_value(self) -> list:
+        return []
+
+    def validate(self, path: tuple[str | int, ...], value: Any) -> Iterator[str]:
+        if not isinstance(value, list | tuple):
+            yield f"Option {self._format_path(path)!r} must be a list"
+            return
+
+        if (min_items := self.metadata_get("min_items")) is not None and len(
+            value
+        ) < min_items:
+            yield (
+                f"Option {self._format_path(path)!r} requires at least "
+                f"{min_items} item(s), got {len(value)}"
+            )
+        if (max_items := self.metadata_get("max_items")) is not None and len(
+            value
+        ) > max_items:
+            yield (
+                f"Option {self._format_path(path)!r} allows at most "
+                f"{max_items} item(s), got {len(value)}"
+            )
+
+        if isinstance(self._value_type, AnyType):
+            return
+
+        for idx, item in enumerate(value):
+            yield from self._value_type.validate((*path, idx), item)
+
+
+class LiteralType(TypeAnnotation):
+    __slots__ = ("_values",)
+
+    def __init__(self, annotation: Any, metadata: Any = None):
+        super().__init__(annotation, metadata)
+        self._values = get_args(annotation)
+
+    def __str__(self):
+        return " | ".join(
+            repr(type_) for type_ in self._values if type_ is not type(None)
+        )
+
+    @property
+    def simple_type(self) -> Any:
+        return type(self._values[0])
+
+    def zero_value(self) -> Any:
+        return self._values[0]
+
+    def validate(self, path: tuple[str | int, ...], value: Any) -> Iterator[str]:
+        if value not in self._values:
+            yield f"Option {self._format_path(path)!r} must be one of {self._values!r}"
+
+
+class UnionType(TypeAnnotation):
+    __slots__ = ("_value_types",)
+
+    def __init__(self, annotation: Any, metadata: Any = None) -> None:
+        super().__init__(annotation, metadata)
+        self._value_types = tuple(
+            TypeAnnotation.parse(arg) for arg in get_args(annotation)
+        )
+
+    @property
+    def is_optional(self) -> bool:
+        return any(isinstance(value_type, NoneType) for value_type in self._value_types)
+
+    def __str__(self):
+        return " | ".join(
+            {
+                str(type_)
+                for type_ in self._value_types
+                if not isinstance(type_, NoneType)
+            }
+        )
+
+    @property
+    def simple_type(self) -> Any:
+        return next(
+            vt for vt in self._value_types if not isinstance(vt, NoneType)
+        ).simple_type
+
+    def zero_value(self) -> Any:
+        if any(isinstance(value_type, NoneType) for value_type in self._value_types):
+            # If the Type can be None then that's the zero value
+            return None
+        return self._value_types[0].zero_value()
+
+    def validate(self, path: tuple[str | int, ...], value: Any) -> Iterator[str]:
+        if len(self._value_types) == 2:
+            # In case this is a simple optional type then just validate the wrapped type
+            # This results in more specific validation errors
+            if isinstance(self._value_types[1], NoneType):
+                yield from self._value_types[0].validate(path, value)
+                return
+            elif isinstance(self._value_types[0], NoneType):
+                yield from self._value_types[1].validate(path, value)
+                return
+
+        for value_type in self._value_types:
+            errors = next(value_type.validate(path, value), None)
+            if errors is None:
+                break
+        else:
+            yield (
+                f"Option {self._format_path(path)!r} must have a value of type: {self}"
+            )
+
+
+class AnyType(TypeAnnotation):
+    def __init__(self, annotation: Any = Any, metadata: Any = None):
+        super().__init__(annotation, metadata)
+
+    def __str__(self):
+        return "Any"
+
+    @property
+    def simple_type(self) -> Any:
+        return None
+
+    def validate(self, path: tuple[str | int, ...], value: Any) -> Iterator[str]:
+        if False:
+            yield ""
+        return
+
+
+class NoneType(TypeAnnotation):
+    def __init__(self, annotation: Any = None, metadata: Any = None):
+        super().__init__(annotation or type(None), metadata)
+
+    @property
+    def simple_type(self) -> Any:
+        return None
+
+    def __str__(self):
+        return "None"
+
+    def validate(self, path: tuple[str | int, ...], value: Any) -> Iterator[str]:
+        if value is not None:
+            # this should probably never happen
+            yield f"Option {self._format_path(path)!r} must be None"
+
+
+class PrimitiveType(TypeAnnotation):
+    def __str__(self):
+        return self._annotation.__name__
+
+    def zero_value(self) -> Any:
+        return self._annotation()
+
+    def validate(self, path: tuple[str | int, ...], value: Any) -> Iterator[str]:
+        if not isinstance(value, self._annotation):
+            yield (
+                f"Option {self._format_path(path)!r} must have a value of type: {self}"
+            )
+            return
+
+        if self._annotation is str:
+            if (pattern := self.metadata_get("pattern")) is not None:
+                import re
+
+                if re.search(pattern, value) is None:
+                    yield (
+                        f"Option {self._format_path(path)!r} value {value!r} "
+                        f"does not match pattern {pattern!r}"
+                    )
+            if (min_length := self.metadata_get("min_length")) is not None and len(
+                value
+            ) < min_length:
+                yield (
+                    f"Option {self._format_path(path)!r} value {value!r} "
+                    f"is shorter than minimum length {min_length}"
+                )
+            if (max_length := self.metadata_get("max_length")) is not None and len(
+                value
+            ) > max_length:
+                yield (
+                    f"Option {self._format_path(path)!r} value {value!r} "
+                    f"is longer than maximum length {max_length}"
+                )
+
+        if self._annotation in (int, float):
+            if (
+                minimum := self.metadata_get("minimum")
+            ) is not None and value < minimum:
+                yield (
+                    f"Option {self._format_path(path)!r} value {value!r} "
+                    f"is below minimum {minimum!r}"
+                )
+            if (
+                maximum := self.metadata_get("maximum")
+            ) is not None and value > maximum:
+                yield (
+                    f"Option {self._format_path(path)!r} value {value!r} "
+                    f"is above maximum {maximum!r}"
+                )

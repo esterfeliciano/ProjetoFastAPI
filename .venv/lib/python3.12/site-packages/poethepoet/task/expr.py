@@ -1,0 +1,201 @@
+from __future__ import annotations
+
+import re
+from typing import TYPE_CHECKING, Annotated, Any
+
+from ..exceptions import ConfigValidationError, ExpressionParseError
+from ..options.annotations import Metadata
+from .base import PoeTask
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Mapping, Sequence
+
+    from ..config import PoeConfig
+    from ..context import RunContext
+    from ..env.task_env import TaskEnv
+    from ..executor.task_run import PoeTaskRun
+    from .base import TaskSpecFactory
+
+
+class ExprTask(PoeTask):
+    """
+    Evaluates a Python expression to produce a result. Can reference
+    environment variables and arguments, and leverage most python builtins.
+    """
+
+    content: str
+
+    __key__ = "expr"
+
+    class TaskOptions(PoeTask.TaskOptions):
+        imports: Sequence[str] = ()
+        """
+        A list of Python modules to be imported for use in the expression.
+        """
+
+        assert_: Annotated[bool | int, Metadata(config_name="assert")] = False
+        """
+        A boolean indicating if the task will fail when the result of the
+        expression is falsy. If an integer is given, the task will exit with that
+        code when the result is falsy.
+        """
+
+        use_exec: bool = False
+        """
+        Specify that this task should be executed in the same process, instead of
+        as a subprocess. Note: This feature has limitations, such as not being
+        compatible with tasks that are referenced by other tasks and not working on
+        Windows.
+        """
+
+        ignore_fail: bool | list[int] = False
+        """
+        Return exit code 0 even if the task fails, or specify a list of task exit
+        codes to ignore.
+        """
+
+        def validate(self):
+            super().validate()
+            if self.use_exec and self.capture_stdout:
+                raise ConfigValidationError(
+                    "'use_exec' and 'capture_stdout'"
+                    " options cannot be both provided on the same task."
+                )
+
+    class TaskSpec(PoeTask.TaskSpec):
+        content: str
+        options: ExprTask.TaskOptions
+
+        def _task_validations(self, config: PoeConfig, task_specs: TaskSpecFactory):
+            """
+            Perform validations on this TaskSpec that apply to a specific task type
+            """
+            try:
+                self.task_type._substitute_env_vars(self.content.strip(), {})  # type: ignore[attr-defined]
+            except (ValueError, ExpressionParseError) as error:
+                raise ConfigValidationError(f"Invalid expression: {error}")
+
+    @classmethod
+    def __schema_fragment__(cls, ctx: Any) -> dict:
+        """
+        Override: forbid the ``use_exec`` + ``capture_stdout`` combination
+        (runtime ``TaskOptions.validate`` rejects it too).
+        """
+        fragment = super().__schema_fragment__(ctx)
+        fragment["if"] = {
+            "properties": {"use_exec": {"const": True}},
+            "required": ["use_exec"],
+        }
+        # Encode the forbidden property as `{capture_stdout: false}`
+        # rather than `{not: {required: [capture_stdout]}}`: semantically
+        # identical, but the later fails ajv's strictRequired in schemastore
+        fragment["then"] = {"properties": {"capture_stdout": False}}
+        return fragment
+
+    spec: TaskSpec
+
+    async def _handle_run(
+        self, context: RunContext, env: TaskEnv, task_state: PoeTaskRun
+    ):
+        from ..helpers.python import format_class
+
+        if ignore_fail := self.spec.options.ignore_fail:
+            task_state.ignore_failure(ignore_fail)
+
+        named_arg_values, extra_args = self.get_parsed_arguments(env)
+        env.register_task_args(named_arg_values, extra_args)
+        named_arg_values = env.get_args()
+
+        imports = self.spec.options.imports
+
+        expr, env_values = self.parse_content(named_arg_values, env, imports)
+        argv = [
+            self.spec.name,
+            *(env.fill_template(token) for token in self.invocation[1:]),
+        ]
+
+        src_path = self.ctx.config.project_dir / "src"
+        src_path_append = (
+            f"sys.path.append({str(src_path)!r});" if src_path.is_dir() else ""
+        )
+
+        script = [
+            f"import sys;{src_path_append}sys.argv = {argv!r};",
+            (f"import {', '.join(imports)}; " if imports else ""),
+            f"{format_class(named_arg_values)}",
+            f"{format_class(env_values, classname='__env')}",
+            f"result = ({expr});",
+            "print(result);",
+        ]
+
+        falsy_return_code = int(self.spec.options.get("assert"))
+        if falsy_return_code:
+            script.append(f"exit(0 if result else {falsy_return_code});")
+
+        # Exactly which python executable to use is usually resolved by the executor
+        # It's important that the script contains no line breaks to avoid issues on
+        # windows
+        cmd = ("python", "-c", "".join(script))
+
+        self._print_action(self.spec.content.strip(), context.dry)
+        executor = self._get_executor(context, env, resolve_python=True)
+        process = await executor.execute(cmd, use_exec=self.spec.options.use_exec)
+        await task_state.add_process(process, finalize=True)
+
+    def parse_content(
+        self,
+        args: dict[str, Any] | None,
+        env: TaskEnv,
+        imports: Iterable[str],
+    ) -> tuple[str, dict[str, str]]:
+        """
+        Returns the expression to evaluate and the subset of env vars that it references
+
+        Templated referenced to env vars are resolve before parsing the expression.
+
+        Will raise an exception if the content contains invalid syntax or references
+        python variables that are not in scope.
+        """
+
+        from ..helpers.python import resolve_expression
+
+        expression, accessed_vars = self._substitute_env_vars(
+            self.spec.content.strip(), env
+        )
+
+        expression = resolve_expression(
+            source=expression,
+            arguments=set(args or ()),
+            allowed_vars={"sys", "__env", *imports},
+        )
+        # Strip out any new lines because they can be problematic on windows
+        expression = re.sub(r"((\r\n|\r|\n) | (\r\n|\r|\n))", " ", expression)
+        expression = re.sub(r"(\r\n|\r|\n)", " ", expression)
+
+        return expression, accessed_vars
+
+    @classmethod
+    def _substitute_env_vars(cls, content: str, env: Mapping[str, str]):
+        """
+        Substitute ${template} references to env vars with a reference to a python class
+        attribute like __env.var, and collect the accessed env vars so we can construct
+        that class with the required attributes later.
+        """
+
+        from ..env.utils import SpyDict
+        from ..helpers.parse import parse_template
+
+        # Spy on access to the env, so that instead of replacing template ${keys} with
+        # the corresponding value, replace them with a python name and keep track of
+        # referenced env vars.
+        accessed_vars: dict[str, str] = {}
+
+        def getitem_spy(obj: SpyDict, key: str, value: str):
+            accessed_vars[key] = value
+            return f"__env.{key}"
+
+        expression = parse_template(content, require_braces=True).resolve(
+            SpyDict(env, getitem_spy=getitem_spy)
+        )
+
+        return expression, accessed_vars
