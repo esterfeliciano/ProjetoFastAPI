@@ -2,6 +2,7 @@ from http import HTTPStatus
 from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -16,6 +17,10 @@ from fast_zero.users.models import User
 from fast_zero.users.security import get_current_user
 
 router = APIRouter(tags=['cart'])
+
+
+class CheckoutSchema(BaseModel):
+    payment_method: str = 'Pix'
 
 
 @router.post(
@@ -77,6 +82,7 @@ def get_cart(
     response_model=CheckoutResponse,
 )
 def checkout_cart(
+    checkout_data: CheckoutSchema | None = None,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
@@ -90,9 +96,12 @@ def checkout_cart(
             detail='Cart is empty',
         )
 
+    payment_method = checkout_data.payment_method if checkout_data else 'Pix'
+
     mensagem = (
         'Olá! Gostaria de finalizar o meu pedido:\n\n'
-        f'*Cliente:* {current_user.username}\n\n'
+        f'*Cliente:* {current_user.username}\n'
+        f'*Forma de Pagamento:* {payment_method}\n\n'
     )
     total = 0.0
 

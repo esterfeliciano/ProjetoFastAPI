@@ -16,5 +16,5 @@ class Product:
     stock: Mapped[int]
     category: Mapped[str]
     created_at: Mapped[datetime] = mapped_column(
-        server_default='CURRENT_TIMESTAMP'
+        init=False, default_factory=datetime.now
     )
