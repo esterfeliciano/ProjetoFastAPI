@@ -1,5 +1,11 @@
 from http import HTTPStatus
 
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from src.config.database_settings import get_session
 from src.users.models import User
 from src.users.schemas import (
     Message,
@@ -14,11 +20,6 @@ from src.users.security import (
     get_password_hash,
     verify_password,
 )
-from src.config.database_settings import get_session
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 
 router = APIRouter(tags=['users'])
 

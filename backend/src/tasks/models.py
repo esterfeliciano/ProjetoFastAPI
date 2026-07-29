@@ -1,9 +1,10 @@
 from datetime import datetime
 from enum import Enum
 
-from src.users.models import table_registry
 from sqlalchemy import ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column
+
+from src.users.models import table_registry
 
 
 class TaskState(str, Enum):

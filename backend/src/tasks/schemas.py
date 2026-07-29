@@ -1,5 +1,6 @@
-from src.tasks.models import TaskState
 from pydantic import BaseModel
+
+from src.tasks.models import TaskState
 
 
 class TaskSchema(BaseModel):

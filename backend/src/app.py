@@ -1,10 +1,11 @@
 from http import HTTPStatus
 
-from src.users.cart.router import router as cart_router
-from src.users.router import router as users_router
+from fastapi import FastAPI
+
 from src.products.router import router as products_router
 from src.tasks.router import router as task_router
-from fastapi import FastAPI
+from src.users.cart.router import router as cart_router
+from src.users.router import router as users_router
 
 app = FastAPI()
 app.include_router(task_router)

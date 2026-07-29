@@ -2,14 +2,15 @@ from datetime import datetime, timedelta
 from http import HTTPStatus
 from zoneinfo import ZoneInfo
 
-from src.users.models import User
-from src.config.database_settings import get_session
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jwt import DecodeError, decode, encode
 from pwdlib import PasswordHash
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+
+from src.config.database_settings import get_session
+from src.users.models import User
 
 # Constantes provisórias, serão movidas para settings numa próxima etapa
 SECRET_KEY = 'your-very-secret-and-exclusive-key'

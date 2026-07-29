@@ -1,5 +1,7 @@
-from src.users.models import User
-from src.users.security import get_current_user
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
 from src.config.database_settings import get_session
 from src.products.models import Product
 from src.products.schemas import (
@@ -8,9 +10,8 @@ from src.products.schemas import (
     ProductSchema,
     ProductUpdate,
 )
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
-from sqlalchemy.orm import Session
+from src.users.models import User
+from src.users.security import get_current_user
 
 router = APIRouter(prefix='/products', tags=['products'])
 

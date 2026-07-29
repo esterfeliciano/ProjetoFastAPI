@@ -1,12 +1,13 @@
-from src.users.models import (
-    table_registry,  # Utiliza o mesmo registry do projeto
-)
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import (
     Mapped,
     mapped_as_dataclass,
     mapped_column,
     relationship,
+)
+
+from src.users.models import (
+    table_registry,  # Utiliza o mesmo registry do projeto
 )
 
 

@@ -1,7 +1,9 @@
 from http import HTTPStatus
 
-from src.users.models import User
-from src.users.security import get_current_user
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
+from sqlalchemy.orm import Session  # Use Session síncrona do seu config
+
 from src.config.database_settings import get_session
 from src.tasks.models import Task
 from src.tasks.schemas import (
@@ -11,9 +13,8 @@ from src.tasks.schemas import (
     TaskSchema,
     TaskUpdate,
 )
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
-from sqlalchemy.orm import Session  # Use Session síncrona do seu config
+from src.users.models import User
+from src.users.security import get_current_user
 
 router = APIRouter(prefix='/tasks', tags=['tasks'])
 

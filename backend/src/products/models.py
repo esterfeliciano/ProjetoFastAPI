@@ -1,7 +1,8 @@
 from datetime import datetime
 
-from src.users.models import table_registry
 from sqlalchemy.orm import Mapped, mapped_column
+
+from src.users.models import table_registry
 
 
 @table_registry.mapped_as_dataclass

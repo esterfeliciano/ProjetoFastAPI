@@ -1,6 +1,12 @@
 from http import HTTPStatus
 from urllib.parse import quote
 
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from src.config.database_settings import get_session
 from src.users.cart.models import CartItemModel, CartModel
 from src.users.cart.schemas import (
     CartItemSchema,
@@ -9,11 +15,6 @@ from src.users.cart.schemas import (
 )
 from src.users.models import User
 from src.users.security import get_current_user
-from src.config.database_settings import get_session
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 
 router = APIRouter(tags=['cart'])
 
