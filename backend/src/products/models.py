@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fast_zero.backend.src.users.models import table_registry
+from src.users.models import table_registry
 from sqlalchemy.orm import Mapped, mapped_column
 
 

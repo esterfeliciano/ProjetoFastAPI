@@ -2,8 +2,8 @@ from datetime import datetime, timedelta
 from http import HTTPStatus
 from zoneinfo import ZoneInfo
 
-from fast_zero.backend.src.users.models import User
-from fast_zero.config.database_settings import get_session
+from src.users.models import User
+from src.config.database_settings import get_session
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jwt import DecodeError, decode, encode

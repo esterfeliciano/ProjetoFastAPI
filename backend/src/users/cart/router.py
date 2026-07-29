@@ -1,15 +1,15 @@
 from http import HTTPStatus
 from urllib.parse import quote
 
-from fast_zero.backend.src.users.cart.models import CartItemModel, CartModel
-from fast_zero.backend.src.users.cart.schemas import (
+from src.users.cart.models import CartItemModel, CartModel
+from src.users.cart.schemas import (
     CartItemSchema,
     CartPublic,
     CheckoutResponse,
 )
-from fast_zero.backend.src.users.models import User
-from fast_zero.backend.src.users.security import get_current_user
-from fast_zero.config.database_settings import get_session
+from src.users.models import User
+from src.users.security import get_current_user
+from src.config.database_settings import get_session
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select

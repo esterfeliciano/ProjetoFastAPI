@@ -1,10 +1,10 @@
 from http import HTTPStatus
 
-from fast_zero.backend.src.users.models import User
-from fast_zero.backend.src.users.security import get_current_user
-from fast_zero.config.database_settings import get_session
-from fast_zero.tasks.models import Task
-from fast_zero.tasks.schemas import (
+from src.users.models import User
+from src.users.security import get_current_user
+from src.config.database_settings import get_session
+from src.tasks.models import Task
+from src.tasks.schemas import (
     TaskFilter,
     TaskList,
     TaskPublic,

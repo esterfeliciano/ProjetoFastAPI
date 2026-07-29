@@ -42,7 +42,7 @@ quote-style = 'single'
 
 [tool.pytest.ini_options]
 pythonpath = ['.']
-addopts = ['-p', 'no:warnings', '--cov=fast_zero', '--cov-context=test']
+addopts = ['-p', 'no:warnings', '--cov=src', '--cov-context=test']
 
 [tool.poetry.requires-plugins]
 poethepoet = { version = "~0.48.0", extras = ["poetry_plugin"]}
@@ -56,7 +56,7 @@ format.sequence = [
   { cmd = "ruff check --fix" },
   { cmd = "ruff format" },
 ]
-serve = "fastapi dev fast_zero/app.py"
+serve = "fastapi dev src/app.py"
 test.sequence = [
   "lint",
   { cmd = "pytest -s -x -vv $POE_EXTRA_ARGS" },

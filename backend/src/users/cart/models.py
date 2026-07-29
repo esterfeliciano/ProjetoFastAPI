@@ -1,4 +1,4 @@
-from fast_zero.backend.src.users.models import (
+from src.users.models import (
     table_registry,  # Utiliza o mesmo registry do projeto
 )
 from sqlalchemy import ForeignKey

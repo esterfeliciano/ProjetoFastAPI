@@ -1,8 +1,8 @@
-from fast_zero.backend.src.users.models import User
-from fast_zero.backend.src.users.security import get_current_user
-from fast_zero.config.database_settings import get_session
-from fast_zero.products.models import Product
-from fast_zero.products.schemas import (
+from src.users.models import User
+from src.users.security import get_current_user
+from src.config.database_settings import get_session
+from src.products.models import Product
+from src.products.schemas import (
     ProductList,
     ProductPublic,
     ProductSchema,

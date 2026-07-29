@@ -5,11 +5,12 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from fast_zero.config.database_settings import DatabaseSettings
-from fast_zero.users.models import table_registry
-from fast_zero.products.models import Product  # noqa: F401
-from fast_zero.users.models import User  # noqa: F401
-from fast_zero.users.cart.models import CartModel, CartItemModel  # noqa: F401,E501
+from src.config.database_settings import DatabaseSettings
+from src.users.models import table_registry
+from src.products.models import Product  # noqa: F401
+from src.users.models import User  # noqa: F401
+from src.users.cart.models import CartModel, CartItemModel  # noqa: F401,E501
+from src.tasks.models import Task  # noqa: F401
 
 config = context.config
 config.set_main_option('sqlalchemy.url', DatabaseSettings().DATABASE_URL)

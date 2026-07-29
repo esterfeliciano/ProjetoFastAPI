@@ -1,4 +1,4 @@
-from fast_zero.tasks.models import TaskState
+from src.tasks.models import TaskState
 from pydantic import BaseModel
 
 

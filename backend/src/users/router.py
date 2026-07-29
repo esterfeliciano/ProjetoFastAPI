@@ -1,20 +1,20 @@
 from http import HTTPStatus
 
-from fast_zero.backend.src.users.models import User
-from fast_zero.backend.src.users.schemas import (
+from src.users.models import User
+from src.users.schemas import (
     Message,
     Token,
     UserList,
     UserPublic,
     UserSchema,
 )
-from fast_zero.backend.src.users.security import (
+from src.users.security import (
     create_access_token,
     get_current_user,
     get_password_hash,
     verify_password,
 )
-from fast_zero.config.database_settings import get_session
+from src.config.database_settings import get_session
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
