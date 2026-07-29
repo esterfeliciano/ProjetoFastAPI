@@ -1,4 +1,4 @@
-#!/home/esterfeliciano/estagio/ProjetoFastAPI/fast_zero/ProjetoFastAPI/.venv/bin/python
+#!/home/esterfeliciano/estagio/ProjetoFastAPI/fast_zero/Backend/.venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
