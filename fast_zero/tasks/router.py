@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session  # Use Session síncrona do seu config
 
 from fast_zero.config.database_settings import get_session
 from fast_zero.tasks.models import Task
@@ -23,7 +23,7 @@ router = APIRouter(prefix='/tasks', tags=['tasks'])
 async def create_task(
     task: TaskSchema,
     user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_session),
+    session: Session = Depends(get_session),
 ):
     db_task = Task(
         title=task.title,
@@ -32,14 +32,14 @@ async def create_task(
         user_id=user.id,
     )
     session.add(db_task)
-    await session.commit()
-    await session.refresh(db_task)
+    session.commit()
+    session.refresh(db_task)
     return db_task
 
 
 @router.get('/', response_model=TaskList)
 async def list_tasks(
-    session: AsyncSession = Depends(get_session),
+    session: Session = Depends(get_session),
     user: User = Depends(get_current_user),
     filters: TaskFilter = Depends(),
 ):
@@ -52,9 +52,7 @@ async def list_tasks(
     if filters.state:
         query = query.filter(Task.state == filters.state)
 
-    result = await session.scalars(
-        query.offset(filters.offset).limit(filters.limit)
-    )
+    result = session.scalars(query.offset(filters.offset).limit(filters.limit))
     tasks = result.all()
 
     return {'tasks': tasks}
@@ -65,9 +63,9 @@ async def patch_task(
     task_id: int,
     task: TaskUpdate,
     user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_session),
+    session: Session = Depends(get_session),
 ):
-    db_task = await session.scalar(
+    db_task = session.scalar(
         select(Task).where(Task.user_id == user.id, Task.id == task_id)
     )
     if not db_task:
@@ -78,8 +76,8 @@ async def patch_task(
     for key, value in task.model_dump(exclude_unset=True).items():
         setattr(db_task, key, value)
 
-    await session.commit()
-    await session.refresh(db_task)
+    session.commit()
+    session.refresh(db_task)
     return db_task
 
 
@@ -87,9 +85,9 @@ async def patch_task(
 async def delete_task(
     task_id: int,
     user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_session),
+    session: Session = Depends(get_session),
 ):
-    db_task = await session.scalar(
+    db_task = session.scalar(
         select(Task).where(Task.user_id == user.id, Task.id == task_id)
     )
     if not db_task:
@@ -97,7 +95,7 @@ async def delete_task(
             status_code=HTTPStatus.NOT_FOUND, detail='Task not found.'
         )
 
-    await session.delete(db_task)
-    await session.commit()
+    session.delete(db_task)
+    session.commit()
 
     return {'message': 'Task has been deleted successfully.'}
