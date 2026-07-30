@@ -1,0 +1,39 @@
+.product-list {
+  padding: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.product-list h2 {
+  font-family: sans-serif;
+  color: #222;
+  margin-bottom: 1rem;
+}
+
+.product-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  font-family: sans-serif;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.product-card h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.1rem;
+}
+
+.product-card p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.out-of-stock {
+  color: #c0392b;
+  font-weight: bold;
+  font-size: 0.85rem;
+}
