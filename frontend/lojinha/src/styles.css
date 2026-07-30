@@ -1,1 +1,27 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700&display=swap');
+
+:root {
+  --color-pink: #FF8FAB;
+  --color-pink-dark: #E8628A;
+  --color-lilac: #C9A9E9;
+  --color-mint: #A8E6CF;
+  --color-cream: #FFF9F5;
+  --color-text: #5C4B51;
+  --font-title: 'Baloo 2', cursive;
+  --font-body: 'Nunito', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--color-cream);
+  color: var(--color-text);
+}
+
+a {
+  color: inherit;
+}

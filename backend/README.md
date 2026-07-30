@@ -140,7 +140,7 @@ Importante: cada usuário só enxerga e edita as **próprias** tarefas — a rot
 | Rota | Método | O que faz | Precisa de login? |
 |---|---|---|---|
 | `/cart/` | POST | Adiciona um item ao carrinho | Sim |
-| `/cart/` | GET | Mostra o carrinho atual | Sim |
+| `/cart/` | GET | Mostra o carrinhho atual | Sim |
 | `/cart/checkout` | POST | Fecha o pedido e gera link do WhatsApp | Sim |
 
 ### Tarefas (`/tasks`)

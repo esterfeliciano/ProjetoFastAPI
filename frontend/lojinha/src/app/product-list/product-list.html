@@ -1,15 +1,54 @@
 <div class="product-list">
-  <h2>Catálogo</h2>
-  @for (product of products; track product.id) {
+  <div class="header-row">
+    <h2>Catálogo</h2>
+    @if (authService.isLoggedIn()) {
+      <a routerLink="/products/new" class="new-product-link">+ Cadastrar Produto</a>
+    }
+  </div>
+
+  @if (loading()) {
+    <p>Carregando...</p>
+  }
+
+  @if (errorMessage()) {
+    <p class="error">{{ errorMessage() }}</p>
+  }
+
+  @if (addedMessage()) {
+    <p class="added-message">{{ addedMessage() }}</p>
+  }
+
+  @if (!loading() && products().length === 0 && !errorMessage()) {
+    <p>Nenhum produto cadastrado ainda.</p>
+  }
+
+  @for (product of products(); track product.id) {
     <div class="product-card">
-      <h3>{{ product.name }}</h3>
-      <p>{{ product.description }}</p>
-      <strong>R$ {{ product.price.toFixed(2) }}</strong>
-      @if (product.stock === 0) {
-        <span class="out-of-stock">Fora de estoque</span>
-      } @else {
-        <span>{{ product.stock }} em estoque</span>
+      @if (getImage(product.id); as imageUrl) {
+        <img [src]="imageUrl" alt="{{ product.name }}" class="product-image" />
       }
+
+      <div class="product-info">
+        <h3>{{ product.name }}</h3>
+        <p>{{ product.description }}</p>
+        <div class="price-stock">
+          <strong>R$ {{ product.price.toFixed(2) }}</strong>
+          @if (product.stock === 0) {
+            <span class="out-of-stock">Fora de estoque</span>
+          } @else {
+            <span class="stock-info">{{ product.stock }} em estoque</span>
+          }
+        </div>
+      </div>
+
+      <div class="product-actions">
+        @if (product.stock > 0) {
+          <button (click)="adicionarAoCarrinho(product)">Adicionar ao Carrinho</button>
+        }
+        @if (authService.isLoggedIn()) {
+          <button class="remove-btn" (click)="removerProduto(product)">Remover</button>
+        }
+      </div>
     </div>
   }
 </div>

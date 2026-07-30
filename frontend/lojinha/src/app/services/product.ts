@@ -1,4 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
 
 export interface Product {
   id: number;
@@ -9,17 +11,31 @@ export interface Product {
   category: string;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
-export class ProductService {
-  private products: Product[] = [
-    { id: 1, name: 'Camiseta Preta', description: 'Algodão 100%', price: 59.9, stock: 12, category: 'Roupas' },
-    { id: 2, name: 'Caneca Térmica', description: '450ml, inox', price: 39.9, stock: 30, category: 'Casa' },
-    { id: 3, name: 'Boné Aba Reta', description: 'Ajustável', price: 49.9, stock: 0, category: 'Acessórios' },
-  ];
+export interface ProductInput {
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  category: string;
+}
 
-  getProducts(): Product[] {
-    return this.products;
+const API_URL = 'http://127.0.0.1:8000';
+
+@Injectable({ providedIn: 'root' })
+export class ProductService {
+  private http = inject(HttpClient);
+
+  getProducts(): Observable<Product[]> {
+    return this.http
+      .get<{ products: Product[] }>(`${API_URL}/products/`)
+      .pipe(map((response) => response.products));
+  }
+
+  addProduct(product: ProductInput): Observable<Product> {
+    return this.http.post<Product>(`${API_URL}/products/`, product);
+  }
+
+  deleteProduct(id: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${API_URL}/products/${id}`);
   }
 }

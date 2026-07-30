@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from urllib.parse import quote
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -13,14 +13,17 @@ from src.users.cart.schemas import (
     CartPublic,
     CheckoutResponse,
 )
-from src.users.models import User
-from src.users.security import get_current_user
 
 router = APIRouter(tags=['cart'])
 
 
 class CheckoutSchema(BaseModel):
     payment_method: str = 'Pix'
+    customer_name: str = 'Cliente'
+
+
+def get_session_id(x_session_id: str = Header(alias='X-Session-Id')) -> str:
+    return x_session_id
 
 
 @router.post(
@@ -31,14 +34,14 @@ class CheckoutSchema(BaseModel):
 def add_to_cart(
     item: CartItemSchema,
     session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user),
+    session_id: str = Depends(get_session_id),
 ):
     cart = session.scalar(
-        select(CartModel).where(CartModel.user_id == current_user.id)
+        select(CartModel).where(CartModel.session_id == session_id)
     )
 
     if not cart:
-        cart = CartModel(user_id=current_user.id)
+        cart = CartModel(session_id=session_id)
         session.add(cart)
         session.commit()
         session.refresh(cart)
@@ -64,10 +67,10 @@ def add_to_cart(
 )
 def get_cart(
     session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user),
+    session_id: str = Depends(get_session_id),
 ):
     cart = session.scalar(
-        select(CartModel).where(CartModel.user_id == current_user.id)
+        select(CartModel).where(CartModel.session_id == session_id)
     )
 
     if not cart:
@@ -84,10 +87,10 @@ def get_cart(
 def checkout_cart(
     checkout_data: CheckoutSchema | None = None,
     session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user),
+    session_id: str = Depends(get_session_id),
 ):
     cart = session.scalar(
-        select(CartModel).where(CartModel.user_id == current_user.id)
+        select(CartModel).where(CartModel.session_id == session_id)
     )
 
     if not cart or not cart.items:
@@ -97,10 +100,11 @@ def checkout_cart(
         )
 
     payment_method = checkout_data.payment_method if checkout_data else 'Pix'
+    customer_name = checkout_data.customer_name if checkout_data else 'Cliente'
 
     mensagem = (
         'Olá! Gostaria de finalizar o meu pedido:\n\n'
-        f'*Cliente:* {current_user.username}\n'
+        f'*Cliente:* {customer_name}\n'
         f'*Forma de Pagamento:* {payment_method}\n\n'
     )
     total = 0.0

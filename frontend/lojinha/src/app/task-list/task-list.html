@@ -1,10 +1,37 @@
 <div class="task-list">
   <h2>Minhas Tarefas</h2>
-  @for (task of tasks; track task.id) {
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="new-task-form">
+    <input type="text" formControlName="title" placeholder="Título da tarefa" />
+    <input type="text" formControlName="description" placeholder="Descrição (opcional)" />
+    <button type="submit">+ Adicionar</button>
+  </form>
+
+  @if (loading()) {
+    <p>Carregando...</p>
+  }
+
+  @if (errorMessage()) {
+    <p class="error">{{ errorMessage() }}</p>
+  }
+
+  @if (!loading() && tasks().length === 0) {
+    <p>Nenhuma tarefa ainda.</p>
+  }
+
+  @for (task of tasks(); track task.id) {
     <div class="task-item" [class.done]="task.state === 'done'">
-      <h4>{{ task.title }}</h4>
-      <p>{{ task.description }}</p>
-      <span class="badge">{{ task.state }}</span>
+      <div>
+        <h4>{{ task.title }}</h4>
+        <p>{{ task.description }}</p>
+        <span class="badge">{{ task.state }}</span>
+      </div>
+      <div class="task-actions">
+        @if (task.state !== 'done') {
+          <button (click)="marcarComoConcluida(task)">Concluir</button>
+        }
+        <button class="delete" (click)="excluirTarefa(task)">Excluir</button>
+      </div>
     </div>
   }
 </div>

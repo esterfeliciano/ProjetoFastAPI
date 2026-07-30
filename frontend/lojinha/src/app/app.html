@@ -1,2 +1,23 @@
-<app-product-list></app-product-list>
-<app-task-list></app-task-list>
+<header class="main-header">
+  <nav class="main-nav">
+    <a routerLink="/" class="brand">🎀 Laços &amp; Cia</a>
+    <a routerLink="/products">Produtos</a>
+    <a routerLink="/cart">Carrinho</a>
+  </nav>
+
+  <div class="menu-wrapper">
+    <button class="menu-toggle" (click)="toggleMenu()" aria-label="Menu">☰</button>
+
+    @if (menuOpen()) {
+      <div class="menu-dropdown">
+        @if (authService.isLoggedIn()) {
+          <button class="logout-item" (click)="logout()">Sair</button>
+        } @else {
+          <a routerLink="/login" (click)="closeMenu()">Login Lojista</a>
+        }
+      </div>
+    }
+  </div>
+</header>
+
+<router-outlet></router-outlet>

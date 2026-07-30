@@ -1,0 +1,23 @@
+<div class="login-form">
+  <h2>Login do Lojista</h2>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <label>
+      Usuário ou e-mail
+      <input type="text" formControlName="username" />
+    </label>
+
+    <label>
+      Senha
+      <input type="password" formControlName="password" />
+    </label>
+
+    @if (errorMessage()) {
+      <p class="error">{{ errorMessage() }}</p>
+    }
+
+    <button type="submit" [disabled]="loading()">
+      {{ loading() ? 'Entrando...' : 'Entrar' }}
+    </button>
+  </form>
+</div>

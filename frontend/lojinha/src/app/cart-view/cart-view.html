@@ -1,0 +1,33 @@
+<div class="cart-view">
+  <h2>Meu Carrinho</h2>
+
+  @if (loading()) {
+    <p>Carregando...</p>
+  }
+
+  @if (errorMessage()) {
+    <p class="error">{{ errorMessage() }}</p>
+  }
+
+  @if (whatsappUrl()) {
+    <div class="success">
+      <p>Pedido gerado! Clique para finalizar pelo WhatsApp:</p>
+      <a [href]="whatsappUrl()" target="_blank" class="whatsapp-link">Enviar pedido no WhatsApp</a>
+    </div>
+  } @else if (!loading() && cart().items.length === 0) {
+    <p>Seu carrinho está vazio.</p>
+  } @else if (!loading()) {
+    @for (item of cart().items; track item.id) {
+      <div class="cart-item">
+        <span>{{ item.quantity }}x {{ item.product_name }}</span>
+        <span>R$ {{ (item.price * item.quantity).toFixed(2) }}</span>
+      </div>
+    }
+
+    <div class="cart-total">
+      <strong>Total: R$ {{ total().toFixed(2) }}</strong>
+    </div>
+
+    <button (click)="finalizarPedido()">Finalizar Pedido</button>
+  }
+</div>

@@ -16,7 +16,7 @@ class CartModel:
     __tablename__ = 'carts'
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), unique=True)
+    session_id: Mapped[str] = mapped_column(unique=True, index=True)
 
     items: Mapped[list['CartItemModel']] = relationship(
         init=False, back_populates='cart', cascade='all, delete-orphan'

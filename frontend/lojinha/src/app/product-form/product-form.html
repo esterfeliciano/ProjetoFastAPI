@@ -1,1 +1,56 @@
-<p>product-form works!</p>
+<div class="product-form">
+  <h2>Novo Produto</h2>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <label>
+      Nome
+      <input type="text" formControlName="name" />
+      @if (form.get('name')?.invalid && form.get('name')?.touched) {
+        <span class="error">Campo obrigatório</span>
+      }
+    </label>
+
+    <label>
+      Descrição
+      <textarea formControlName="description"></textarea>
+      @if (form.get('description')?.invalid && form.get('description')?.touched) {
+        <span class="error">Campo obrigatório</span>
+      }
+    </label>
+
+    <label>
+      Preço (R$)
+      <input type="number" step="0.01" formControlName="price" />
+      @if (form.get('price')?.invalid && form.get('price')?.touched) {
+        <span class="error">Informe um preço válido</span>
+      }
+    </label>
+
+    <label>
+      Estoque
+      <input type="number" formControlName="stock" />
+    </label>
+
+    <label>
+      Categoria
+      <input type="text" formControlName="category" />
+    </label>
+
+    <label>
+      Foto (PNG) — ainda não é enviada ao backend
+      <input type="file" accept="image/png" (change)="onFileSelected($event)" />
+    </label>
+
+    @if (imagePreview()) {
+      <img [src]="imagePreview()" alt="Preview" class="preview" />
+    }
+
+    @if (errorMessage()) {
+      <p class="error">{{ errorMessage() }}</p>
+    }
+
+    <button type="submit" [disabled]="saving()">
+      {{ saving() ? 'Salvando...' : 'Salvar Produto' }}
+    </button>
+  </form>
+</div>

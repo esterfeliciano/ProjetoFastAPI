@@ -1,25 +1,31 @@
-.product-form {
+.login-form {
   padding: 1.5rem;
-  max-width: 500px;
-  margin: 0 auto;
+  max-width: 400px;
+  margin: 3rem auto;
   font-family: sans-serif;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
 }
 
-.product-form form {
+.login-form h2 {
+  text-align: center;
+}
+
+.login-form form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.product-form label {
+.login-form label {
   display: flex;
   flex-direction: column;
   font-weight: bold;
   gap: 0.25rem;
 }
 
-.product-form input,
-.product-form textarea {
+.login-form input {
   font-weight: normal;
   padding: 0.5rem;
   border: 1px solid #ccc;
@@ -28,14 +34,7 @@
 
 .error {
   color: #c0392b;
-  font-size: 0.8rem;
-  font-weight: normal;
-}
-
-.preview {
-  max-width: 150px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
+  font-size: 0.85rem;
 }
 
 button {
