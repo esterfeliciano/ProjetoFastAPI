@@ -1,0 +1,45 @@
+.task-list {
+  padding: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.task-list h2 {
+  font-family: sans-serif;
+  color: #222;
+  margin-bottom: 1rem;
+}
+
+.task-item {
+  border-left: 4px solid #3498db;
+  background: #f9f9f9;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  font-family: sans-serif;
+  border-radius: 4px;
+}
+
+.task-item.done {
+  border-left-color: #27ae60;
+  opacity: 0.6;
+}
+
+.task-item h4 {
+  margin: 0 0 0.25rem 0;
+}
+
+.task-item p {
+  margin: 0 0 0.4rem 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.badge {
+  display: inline-block;
+  background: #3498db;
+  color: white;
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
