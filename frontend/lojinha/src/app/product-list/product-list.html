@@ -1,0 +1,15 @@
+<div class="product-list">
+  <h2>Catálogo</h2>
+  @for (product of products; track product.id) {
+    <div class="product-card">
+      <h3>{{ product.name }}</h3>
+      <p>{{ product.description }}</p>
+      <strong>R$ {{ product.price.toFixed(2) }}</strong>
+      @if (product.stock === 0) {
+        <span class="out-of-stock">Fora de estoque</span>
+      } @else {
+        <span>{{ product.stock }} em estoque</span>
+      }
+    </div>
+  }
+</div>
