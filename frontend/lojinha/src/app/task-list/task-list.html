@@ -1,1 +1,10 @@
-<p>task-list works!</p>
+<div class="task-list">
+  <h2>Minhas Tarefas</h2>
+  @for (task of tasks; track task.id) {
+    <div class="task-item" [class.done]="task.state === 'done'">
+      <h4>{{ task.title }}</h4>
+      <p>{{ task.description }}</p>
+      <span class="badge">{{ task.state }}</span>
+    </div>
+  }
+</div>
