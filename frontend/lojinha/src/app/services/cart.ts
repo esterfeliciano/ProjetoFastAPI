@@ -46,6 +46,12 @@ export class CartService {
     return this.http.post<Cart>(`${API_URL}/cart/`, item, { headers: this.headers });
   }
 
+  removeItem(itemId: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${API_URL}/cart/items/${itemId}`, {
+      headers: this.headers,
+    });
+  }
+
   checkout(paymentMethod: string, customerName: string): Observable<CheckoutResponse> {
     return this.http.post<CheckoutResponse>(
       `${API_URL}/cart/checkout`,

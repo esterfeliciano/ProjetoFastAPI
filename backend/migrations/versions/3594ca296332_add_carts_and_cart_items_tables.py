@@ -28,7 +28,7 @@ def upgrade() -> None:
     sa.Column('price', sa.Float(), nullable=False),
     sa.Column('stock', sa.Integer(), nullable=False),
     sa.Column('category', sa.String(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default='CURRENT_TIMESTAMP', nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_products_name'), 'products', ['name'], unique=True)

@@ -1,91 +1,93 @@
 .home {
   max-width: 900px;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 3rem 1.5rem;
   text-align: center;
 }
 
 .hero {
-  padding: 3rem 1.5rem;
-  background: linear-gradient(135deg, var(--color-pink) 0%, var(--color-lilac) 100%);
+  padding: 3.5rem 1.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 24px;
-  color: white;
-  box-shadow: 0 8px 24px rgba(232, 98, 138, 0.25);
-}
-
-.hero-emoji {
-  font-size: 3rem;
-  display: block;
-  margin-bottom: 0.5rem;
 }
 
 .hero h1 {
   font-family: var(--font-title);
-  font-size: 2.8rem;
-  margin: 0 0 0.5rem 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 2.6rem;
+  color: var(--color-pink-dark);
+  margin: 0 0 0.6rem 0;
 }
 
 .tagline {
-  font-size: 1.1rem;
-  margin: 0 0 1.5rem 0;
-  opacity: 0.95;
+  font-size: 1.05rem;
+  color: var(--color-text-muted);
+  margin: 0 0 1.75rem 0;
 }
 
 .cta-button {
   display: inline-block;
-  background: white;
-  color: var(--color-pink-dark);
+  background: var(--color-pink);
+  color: white;
   font-family: var(--font-title);
   font-weight: 700;
-  padding: 0.8rem 2rem;
+  padding: 0.8rem 2.2rem;
   border-radius: 999px;
   text-decoration: none;
-  font-size: 1.1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: transform 0.15s ease;
+  font-size: 1.05rem;
+  transition: background 0.15s ease, transform 0.15s ease;
 }
 
 .cta-button:hover {
-  transform: translateY(-2px) scale(1.03);
+  background: var(--color-pink-dark);
+  transform: translateY(-1px);
 }
 
 .highlights {
   display: flex;
-  gap: 1.5rem;
+  gap: 1.25rem;
   justify-content: center;
-  margin-top: 2.5rem;
+  margin-top: 3rem;
   flex-wrap: wrap;
 }
 
 .highlight-card {
-  background: white;
-  border-radius: 20px;
-  padding: 1.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.75rem 1.5rem;
   width: 180px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
-  border: 2px solid var(--color-mint);
 }
 
-.highlight-emoji {
-  font-size: 2.2rem;
+.highlight-marker {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin-bottom: 0.9rem;
 }
+
+.highlight-marker.mint { background: var(--color-mint); }
+.highlight-marker.lilac { background: var(--color-lilac); }
+.highlight-marker.pink { background: var(--color-pink); }
 
 .highlight-card h3 {
   font-family: var(--font-title);
-  color: var(--color-pink-dark);
-  margin: 0.5rem 0 0.25rem 0;
+  color: var(--color-text);
+  margin: 0 0 0.35rem 0;
+  font-size: 1.05rem;
 }
 
 .highlight-card p {
   font-size: 0.85rem;
-  color: #888;
+  color: var(--color-text-muted);
   margin: 0;
 }
 
 .cart-hint {
-  margin-top: 2.5rem;
-  font-size: 1rem;
+  margin-top: 3rem;
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
 }
 
 .cart-hint a {

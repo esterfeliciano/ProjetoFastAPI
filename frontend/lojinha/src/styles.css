@@ -1,14 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700&display=swap');
 
 :root {
-  --color-pink: #FF8FAB;
-  --color-pink-dark: #E8628A;
-  --color-lilac: #C9A9E9;
-  --color-mint: #A8E6CF;
-  --color-cream: #FFF9F5;
-  --color-text: #5C4B51;
+  --color-pink: #F792AC;
+  --color-pink-dark: #D9527A;
+  --color-lilac: #B79CE0;
+  --color-mint: #9FD8C0;
+  --color-cream: #FDFBF9;
+  --color-surface: #FFFFFF;
+  --color-border: #F0E6E9;
+  --color-text: #4A3F42;
+  --color-text-muted: #9C8C90;
   --font-title: 'Baloo 2', cursive;
   --font-body: 'Nunito', sans-serif;
+  --radius: 16px;
 }
 
 * {

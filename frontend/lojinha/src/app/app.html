@@ -1,12 +1,16 @@
 <header class="main-header">
   <nav class="main-nav">
-    <a routerLink="/" class="brand">🎀 Laços &amp; Cia</a>
+    <a routerLink="/" class="brand">Laços &amp; Cia</a>
     <a routerLink="/products">Produtos</a>
     <a routerLink="/cart">Carrinho</a>
   </nav>
 
   <div class="menu-wrapper">
-    <button class="menu-toggle" (click)="toggleMenu()" aria-label="Menu">☰</button>
+    <button class="menu-toggle" (click)="toggleMenu()" aria-label="Menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
 
     @if (menuOpen()) {
       <div class="menu-dropdown">

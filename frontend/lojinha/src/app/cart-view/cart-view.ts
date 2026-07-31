@@ -37,6 +37,20 @@ export class CartView implements OnInit {
     });
   }
 
+  removerItem(itemId: number): void {
+    this.cartService.removeItem(itemId).subscribe({
+      next: () => {
+        this.cart.update((current) => ({
+          ...current,
+          items: current.items.filter((item) => item.id !== itemId),
+        }));
+      },
+      error: () => {
+        this.errorMessage.set('Não foi possível remover o item.');
+      },
+    });
+  }
+
   finalizarPedido(): void {
     this.cartService.checkout('Pix', 'Cliente').subscribe({
       next: (response) => {
