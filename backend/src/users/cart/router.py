@@ -157,7 +157,11 @@ def checkout_cart(
 
     mensagem += f'\n*Total do Pedido: R$ {total:.2f}*'
 
+<<<<<<< HEAD
     numero_whatsapp = '558186267563'
+=======
+    numero_whatsapp = '5581983960846'
+>>>>>>> 0e52bad1d2ad4adbac4fda1d02736ebbf8c09b24
 
     texto_codificado = quote(mensagem)
     whatsapp_url = (
