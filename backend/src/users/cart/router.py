@@ -79,6 +79,44 @@ def get_cart(
     return cart
 
 
+@router.delete(
+    '/cart/items/{item_id}',
+    status_code=HTTPStatus.OK,
+)
+def remove_cart_item(
+    item_id: int,
+    session: Session = Depends(get_session),
+    session_id: str = Depends(get_session_id),
+):
+    cart = session.scalar(
+        select(CartModel).where(CartModel.session_id == session_id)
+    )
+
+    if not cart:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail='Cart not found',
+        )
+
+    item = session.scalar(
+        select(CartItemModel).where(
+            CartItemModel.id == item_id,
+            CartItemModel.cart_id == cart.id,
+        )
+    )
+
+    if not item:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail='Item not found in this cart',
+        )
+
+    session.delete(item)
+    session.commit()
+
+    return {'message': 'Item removed successfully'}
+
+
 @router.post(
     '/cart/checkout',
     status_code=HTTPStatus.OK,
@@ -119,7 +157,7 @@ def checkout_cart(
 
     mensagem += f'\n*Total do Pedido: R$ {total:.2f}*'
 
-    numero_whatsapp = '5581999999999'
+    numero_whatsapp = '5581983960846'
 
     texto_codificado = quote(mensagem)
     whatsapp_url = (
